@@ -1,7 +1,28 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import logo from "../assets/logo.jpeg";
 
 export default function Header() {
+  const location = useLocation();
+  const [, setSessionKey] = useState(0);
+
+  const currentUser = (() => {
+    try {
+      const stored = localStorage.getItem("foundmet_user");
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  })();
+
+  const handleLogout = () => {
+    localStorage.removeItem("foundmet_token");
+    localStorage.removeItem("foundmet_user");
+    setSessionKey((prev) => prev + 1);
+  };
+
+  const isActive = (path) => location.pathname === path;
+
   return (
     <header>
       <nav className="navbar navbar-expand-lg bg-white border-bottom sticky-top">
@@ -44,54 +65,84 @@ export default function Header() {
             <ul className="navbar-nav mx-auto mb-2 mb-lg-0">
 
               <li className="nav-item">
-                <Link className="nav-link active" to="/">
+                <Link className={`nav-link ${isActive("/") ? "active fw-bold text-primary" : ""}`} to="/">
                   Home
                 </Link>
               </li>
 
               <li className="nav-item">
-                <Link className="nav-link" to="/explore">
+                <Link className={`nav-link ${isActive("/explore") ? "active fw-bold text-primary" : ""}`} to="/explore">
                   Explore
                 </Link>
               </li>
 
               <li className="nav-item">
-                <Link className="nav-link" to="/ideas">
+                <Link className={`nav-link ${isActive("/ideas") ? "active fw-bold text-primary" : ""}`} to="/explore">
                   Ideas
                 </Link>
               </li>
 
               <li className="nav-item">
-                <Link className="nav-link" to="/projects">
+                <Link className={`nav-link ${isActive("/projects") ? "active fw-bold text-primary" : ""}`} to="/explore">
                   Projects
-                </Link>
-              </li>
-
-              <li className="nav-item">
-                <Link className="nav-link" to="/about">
-                  About
                 </Link>
               </li>
 
             </ul>
 
             {/* Right Side */}
-            <div className="d-flex flex-column flex-lg-row gap-2">
+            <div className="d-flex align-items-center flex-column flex-lg-row gap-2">
+              {currentUser ? (
+                <div className="d-flex align-items-center gap-2">
+                  <Link
+                    to="/dashboard"
+                    className={`btn btn-sm rounded-pill px-3 fw-semibold ${
+                      isActive("/dashboard") ? "btn-primary" : "btn-light border text-main"
+                    }`}
+                  >
+                    <i className="bi bi-speedometer2 me-1"></i> Dashboard
+                  </Link>
 
-              <Link
-                to="/login"
-                className="btn btn-outline-primary px-4"
-              >
-                Login
-              </Link>
+                  <Link to="/dashboard" className="d-flex align-items-center gap-2 text-decoration-none">
+                    <img
+                      src={
+                        currentUser.photo ||
+                        `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                          currentUser.name || "User"
+                        )}&background=0B5CFF&color=fff`
+                      }
+                      alt={currentUser.name}
+                      className="rounded-circle border"
+                      style={{ width: "36px", height: "36px", objectFit: "cover" }}
+                    />
+                    <span className="fw-semibold text-main small d-none d-md-inline">{currentUser.name}</span>
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="btn btn-outline-danger btn-sm px-3 rounded-pill"
+                    title="Log out"
+                  >
+                    <i className="bi bi-box-arrow-right me-1"></i>
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    className="btn btn-outline-primary px-4"
+                  >
+                    Login
+                  </Link>
 
-              <Link
-                to="/register"
-                className="btn btn-foundmet px-4"
-              >
-                Join FoundMet
-              </Link>
-
+                  <Link
+                    to="/register"
+                    className="btn btn-foundmet px-4"
+                  >
+                    Join FoundMet
+                  </Link>
+                </>
+              )}
             </div>
           </div>
 
